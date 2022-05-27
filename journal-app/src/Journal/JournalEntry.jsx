@@ -1,18 +1,32 @@
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import firebase from 'firebase/compat/app';
 import db from '../db';
 
 export default function JournalEntry() {
-    const { id } = useParams();
+    const { id: entryId } = useParams();
     const [entry, setEntry] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const userId = 'ZT75oPQz1m5NNrYpDBwP';
+        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+            console.log(user);
+            setUser(user);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (!user) {
+            return;
+        }
+
         const entryRef = doc(
-            db, 'users', userId, 'journalEntries', id
+            db, 'users', user.uid, 'journalEntries', entryId
         );
         getDoc(entryRef).then(docSnap => {
             setLoading(false);
@@ -25,7 +39,7 @@ export default function JournalEntry() {
                 setError(true);
             }
         });
-    }, [id]);
+    }, [user, entryId]);
 
     if (loading) {
         return <p>Loading...</p>;
@@ -37,7 +51,7 @@ export default function JournalEntry() {
 
     return (
         <div>
-            <h1>Journal Entry: {id}</h1>
+            <h1>Journal Entry: {entryId}</h1>
             {entry.entry}
         </div>
     );

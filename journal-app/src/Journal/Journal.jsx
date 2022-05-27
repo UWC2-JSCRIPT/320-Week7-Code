@@ -3,11 +3,22 @@ import { collection, getDocs, onSnapshot, orderBy, query } from 'firebase/firest
 import db from '../db';
 import { Link } from 'react-router-dom';
 import AddJournal from './AddJournal';
+import firebase from 'firebase/compat/app';
 
 export default function Journal() {
     const [entries, setEntries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+            console.log(user);
+            setUser(user);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         // const getData = async () => {
@@ -34,10 +45,12 @@ export default function Journal() {
         //         setLoading(false);
         //     }
         // );
+        if (!user) {
+            return;
+        }
 
-        const userId = 'ZT75oPQz1m5NNrYpDBwP';
         const entriesQuery = query(
-            collection(db, 'users', userId, 'journalEntries'),
+            collection(db, 'users', user.uid, 'journalEntries'),
             orderBy('createdAt', 'desc')
         );
         const unsubscribe = onSnapshot(
@@ -47,13 +60,14 @@ export default function Journal() {
                 setLoading(false);
             },
             reason => {
+                console.log(reason);
                 setError(true);
                 setLoading(false);
             }
         );
 
         return () => unsubscribe();
-    }, []);
+    }, [user]);
 
     if (error) {
         return <p>An error occurred, please try again.</p>
