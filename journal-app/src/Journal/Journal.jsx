@@ -35,8 +35,9 @@ export default function Journal() {
         //     }
         // );
 
+        const userId = 'ZT75oPQz1m5NNrYpDBwP';
         const entriesQuery = query(
-            collection(db, 'journalEntries'),
+            collection(db, 'users', userId, 'journalEntries'),
             orderBy('createdAt', 'desc')
         );
         const unsubscribe = onSnapshot(

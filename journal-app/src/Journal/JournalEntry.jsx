@@ -10,7 +10,10 @@ export default function JournalEntry() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        const entryRef = doc(db, 'journalEntries', id);
+        const userId = 'ZT75oPQz1m5NNrYpDBwP';
+        const entryRef = doc(
+            db, 'users', userId, 'journalEntries', id
+        );
         getDoc(entryRef).then(docSnap => {
             setLoading(false);
 
